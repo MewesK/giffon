@@ -3,71 +3,101 @@ import uniqueId from "lodash-es/uniqueId";
 
 export default createStore({
   state: {
-    animations: {},
-    frames: {},
+    animations: [],
+    frames: [],
   },
   getters: {
     getAnimationById: (state) => (id) => {
-      return state.animations[id];
+      return state.animations.find((animation) => animation.id === id);
     },
     getFrameById: (state) => (id) => {
-      return state.frames[id];
+      return state.frames.find((frame) => frame.id === id);
     },
   },
   mutations: {
-    newAnimation: (state, { animationId = uniqueId("animation") }) => {
+    createAnimation: (state, { animationId = uniqueId("animation") }) => {
       // New animation
-      state.animations[animationId] = {
+      state.animations.push({
         id: animationId,
         frameReferences: [],
-      };
+      });
     },
     removeAnimation: (state, { animationId }) => {
+      // Get animation index
+      const animationIndex = state.animations.findIndex(
+        (animation) => animation.id === animationId
+      );
+
       // Remove frames
-      state.animations[animationId].frameReferences.forEach(
-        (frameReference) => delete state.frames[frameReference.id]
+      state.frames = state.frames.filter(
+        (frame) =>
+          !state.animations[animationIndex].frameReferences.includes(frame.id)
       );
 
       // Remove animation
-      delete state.animations[animationId];
+      delete state.animations[animationIndex];
     },
-    newFrame: (state, { animationId, frameId = uniqueId("frame"), file = null }) => {
-      // New frame
-      state.frames[frameId] = {
+    createFrame: (
+      state,
+      { animationId, frameId = uniqueId("frame"), file = null }
+    ) => {
+      // Get animation index
+      const animationIndex = state.animations.findIndex(
+        (animation) => animation.id === animationId
+      );
+
+      // Add frame
+      state.frames.push({
         id: frameId,
         file,
         delay: 100,
         skip: false,
-      };
+      });
 
       // Add frame relation to animation
-      state.animations[animationId].frameReferences.push({ id: frameId });
+      state.animations[animationIndex].frameReferences.push({ id: frameId });
     },
     cloneFrame: (state, { animationId, frameId }) => {
+      // Get animation index
+      const animationIndex = state.animations.findIndex(
+        (animation) => animation.id === animationId
+      );
+
       // Clone frame
-      console.log(animationId, frameId);
       const newFrameId = uniqueId("frame");
-      state.frames[newFrameId] = { ...state.frames[frameId], id: newFrameId };
+      state.frames.push({
+        ...state.frames.find((frame) => frame.id === frameId),
+        id: newFrameId,
+      });
 
       // Add frame relation to animation
       const newFrameIndex =
-        state.animations[animationId].frameReferences.findIndex(
+        state.animations[animationIndex].frameReferences.findIndex(
           (frameReference) => frameReference.id === frameId
         ) + 1;
-      state.animations[animationId].frameReferences.splice(newFrameIndex, 0, {
-        id: newFrameId,
-      });
+      state.animations[animationIndex].frameReferences.splice(
+        newFrameIndex,
+        0,
+        {
+          id: newFrameId,
+        }
+      );
     },
     removeFrame: (state, { animationId, frameId }) => {
+      // Get animation index
+      const animationIndex = state.animations.findIndex(
+        (animation) => animation.id === animationId
+      );
+
       // Remove frame relation from animation
-      state.animations[animationId].frameReferences = state.animations[
-        animationId
+      state.animations[animationIndex].frameReferences = state.animations[
+        animationIndex
       ].frameReferences.filter(
         (frameReference) => frameReference.id !== frameId
       );
 
       // Remove frame
-      delete state.frames[frameId];
+      state.frames = state.frames.filter((frame) => frame.id !== frameId);
     },
   },
   actions: {

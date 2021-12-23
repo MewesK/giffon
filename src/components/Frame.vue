@@ -14,7 +14,7 @@
       <h6 class="float-start m-1">#{{ id }}</h6>
       <div class="float-end">
         <b-button
-          @click.stop="toggleSkip"
+          @click.stop="onSkipFrameClick"
           variant="outline-secondary"
           class="border-0 bg-transparent shadow-none p-0 mt-1 me-3"
           title="Skip Frame"
@@ -23,7 +23,7 @@
           <b-icon v-else icon="eye-fill" scale="1.2"></b-icon>
         </b-button>
         <b-button
-          @click="cloneFrame"
+          @click="onCloneFrameClick"
           variant="outline-secondary"
           class="border-0 bg-transparent shadow-none p-0 mt-1 me-3"
           title="Clone Frame"
@@ -31,7 +31,7 @@
           <b-icon icon="files" scale="1.1"></b-icon>
         </b-button>
         <b-button
-          @click="removeFrame"
+          @click="onRemoveFrameClick"
           variant="outline-danger"
           class="border-0 bg-transparent shadow-none p-0 mt-1"
           title="Remove Frame"
@@ -74,7 +74,7 @@ export default {
       required: true,
     },
   },
-  emits: ["cloneFrame", "removeFrame"],
+  emits: ["clone", "remove"],
   computed: {
     frame() {
       return this.$store.getters.getFrameById(this.id);
@@ -97,15 +97,6 @@ export default {
     this.image.src = URL.createObjectURL(this.frame.file);
   },
   methods: {
-    cloneFrame() {
-      this.$emit("cloneFrame", this.id);
-    },
-    removeFrame() {
-      this.$emit("removeFrame", this.id);
-    },
-    toggleSkip() {
-      this.frame.skip = !this.frame.skip;
-    },
     drawImage() {
       const width = this.$refs.canvas.width;
       const height = this.$refs.canvas.height;
@@ -131,6 +122,15 @@ export default {
         this.image.width * scale,
         this.image.height * scale
       );
+    },
+    onCloneFrameClick() {
+      this.$emit("clone", this.id);
+    },
+    onRemoveFrameClick() {
+      this.$emit("remove", this.id);
+    },
+    onSkipFrameClick() {
+      this.frame.skip = !this.frame.skip;
     },
   },
 };

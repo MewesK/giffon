@@ -1,7 +1,7 @@
 <template>
   <input
     multiple
-    @change="onFileChange"
+    @change="onFileInputChange"
     type="file"
     style="display: none"
     ref="fileInput"
@@ -9,7 +9,7 @@
   />
   <b-card
     @dragover.prevent.stop
-    @drop.prevent.stop="onDrop"
+    @drop.prevent.stop="onCardDrop"
     img-top
     no-body
     class="text-center bg-dark border-secondary mt-3 mb-3shadow"
@@ -19,7 +19,7 @@
       <h6 class="float-start m-1">#{{ id }}</h6>
       <div class="float-end">
         <b-button
-          @click="onAddFrame"
+          @click="onAddFrameClick"
           variant="outline-secondary"
           class="border-0 bg-transparent shadow-none p-0 mt-1 me-3"
           title="Add Frame"
@@ -27,7 +27,7 @@
           <b-icon icon="plus-circle-fill" scale="1.1"></b-icon>
         </b-button>
         <b-button
-          @click="removeAnimation"
+          @click="onRemoveAnimationClick"
           variant="outline-danger"
           class="border-0 bg-transparent shadow-none p-0 mt-1"
           title="Remove Animation"
@@ -51,8 +51,8 @@
         >
           <template #item="{ element }">
             <Frame
-              @clone-frame="cloneFrame"
-              @remove-frame="removeFrame"
+              @clone="onFrameClone"
+              @remove="onFrameRemove"
               :id="element.id"
             />
           </template>
@@ -91,28 +91,25 @@ export default {
   },
   methods: {
     addFrame(files) {
-      files.forEach((file) => this.newFrame(file));
+      files.forEach((file) => this.$store.commit("createFrame", { animationId: this.id, file }));
     },
-    cloneFrame(frameId) {
-      this.$store.commit("cloneFrame", { animationId: this.id, frameId });
-    },
-    newFrame(file = null) {
-      this.$store.commit("newFrame", { animationId: this.id, file });
-    },
-    removeAnimation() {
-      this.$store.commit("removeAnimation", { animationId: this.id });
-    },
-    removeFrame(frameId) {
-      this.$store.commit("removeFrame", { animationId: this.id, frameId });
-    },
-    onAddFrame() {
+    onAddFrameClick() {
       this.$refs.fileInput.click();
     },
-    onDrop(event) {
+    onCardDrop(event) {
       this.addFrame(event.dataTransfer.files);
     },
-    onFileChange() {
+    onFileInputChange() {
       this.addFrame(this.$refs.fileInput.files);
+    },
+    onFrameClone(frameId) {
+      this.$store.commit("cloneFrame", { animationId: this.id, frameId });
+    },
+    onFrameRemove(frameId) {
+      this.$store.commit("removeFrame", { animationId: this.id, frameId });
+    },
+    onRemoveAnimationClick() {
+      this.$store.commit("removeAnimation", { animationId: this.id });
     },
   },
 };

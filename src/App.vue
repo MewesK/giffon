@@ -1,7 +1,7 @@
 <template>
   <input
     multiple
-    @change="onFileChange"
+    @change="onFileInputChange"
     type="file"
     style="display: none"
     ref="fileInput"
@@ -17,22 +17,19 @@
           GIF+
         </a>
         <b-button
-          @click="onAddAnimation"
+          @click="onAddAnimationClick"
           variant="outline-secondary"
           class="border-0 bg-transparent shadow-none"
           title="Add Animation"
         >
-          <b-icon
-            icon="plus-circle-fill"
-            scale="1.1"
-          ></b-icon>
+          <b-icon icon="plus-circle-fill" scale="1.1"></b-icon>
         </b-button>
       </div>
     </nav>
   </header>
   <main
     @dragover.prevent.stop
-    @drop.prevent.stop="onDrop"
+    @drop.prevent.stop="onMainDrop"
     class="container-fluid flex-grow-1"
   >
     <template v-for="animation in animations" :key="animation.id">
@@ -42,7 +39,7 @@
 </template>
 
 <script>
-import { mapMutations, mapState } from "vuex";
+import { mapState } from "vuex";
 import uniqueId from "lodash-es/uniqueId";
 
 import Animation from "./components/Animation.vue";
@@ -54,21 +51,20 @@ export default {
   },
   computed: mapState(["animations"]),
   methods: {
-    ...mapMutations(["newAnimation", "newFrame"]),
     addAnimation(files) {
       const animationId = uniqueId("animation");
-      this.newAnimation({ animationId });
+      this.$store.commit("createAnimation", { animationId });
       files.forEach((file) =>
-        this.newFrame({ animationId, file })
+        this.$store.commit("createFrame", { animationId, file })
       );
     },
-    onAddAnimation() {
+    onAddAnimationClick() {
       this.$refs.fileInput.click();
     },
-    onDrop(event) {
+    onMainDrop(event) {
       this.addAnimation(event.dataTransfer.files);
     },
-    onFileChange() {
+    onFileInputChange() {
       this.addAnimation(this.$refs.fileInput.files);
     },
   },
